@@ -1,0 +1,22 @@
+# LinuxServer Webtop - browser-based Ubuntu desktop
+# Open http://localhost:3000 (HTTP) or https://localhost:3001 (HTTPS)
+# Your project is mounted at /workspace inside the desktop.
+services:
+  webtop:
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce
+    container_name: webtop
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    volumes:
+      - webtop_config:/config
+      - .:/workspace
+    shm_size: "1gb"
+    restart: unless-stopped
+
+volumes:
+  webtop_config:

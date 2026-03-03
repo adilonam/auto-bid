@@ -1,3 +1,17 @@
-from config.settings import COOKIES_FILE, LOGIN_URL, TARGET_URL
+from config.settings import (
+    COOKIES_FILE,
+    LOGIN_URL,
+    SEARCH_PAGES_END,
+    SEARCH_PAGES_START,
+    SEARCH_PROJECTS_URL,
+    TARGET_URL,
+)
 
-__all__ = ["COOKIES_FILE", "LOGIN_URL", "TARGET_URL"]
+__all__ = [
+    "COOKIES_FILE",
+    "LOGIN_URL",
+    "SEARCH_PAGES_END",
+    "SEARCH_PAGES_START",
+    "SEARCH_PROJECTS_URL",
+    "TARGET_URL",
+]

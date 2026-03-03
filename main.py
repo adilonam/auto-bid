@@ -1,5 +1,9 @@
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from browser import create_chrome_driver
 from browser.session import ensure_logged_in
 from config import (
@@ -11,6 +15,7 @@ from config import (
     TARGET_URL,
 )
 from freelancer import get_project_links, get_project_title_and_details
+from openai_bid import generate_bid
 
 
 def main() -> None:
@@ -28,8 +33,8 @@ def main() -> None:
                 input(f"Press Enter to go to link {i}... ")
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
-                print("Title:", title)
-                print("Details:", details)
+                bid_text = generate_bid(title, details)
+                print(bid_text)
                 print()
 
         input("Press Enter to close the browser... ")

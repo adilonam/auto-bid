@@ -10,7 +10,7 @@ from config import (
     SEARCH_PROJECTS_URL,
     TARGET_URL,
 )
-from freelancer import get_project_links
+from freelancer import get_project_links, get_project_title_and_details
 
 
 def main() -> None:
@@ -24,8 +24,13 @@ def main() -> None:
             url = f"{SEARCH_PROJECTS_URL}&page={page}"
             driver.get(url)
             links = get_project_links(driver)
-            for u in links:
-                print(u)
+            for i, link in enumerate(links, start=1):
+                input(f"Press Enter to go to link {i}... ")
+                driver.get(link)
+                title, details = get_project_title_and_details(driver)
+                print("Title:", title)
+                print("Details:", details)
+                print()
 
         input("Press Enter to close the browser... ")
     finally:

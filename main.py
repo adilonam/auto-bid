@@ -9,10 +9,10 @@ from freelancer import get_project_links
 def main() -> None:
     driver = create_chrome_driver()
     try:
-        already_on_page = ensure_logged_in(driver, LOGIN_URL, Path(COOKIES_FILE))
-        if not already_on_page:
-            driver.get(TARGET_URL)
+        ensure_logged_in(driver, LOGIN_URL, Path(COOKIES_FILE))
+        driver.get(TARGET_URL)
 
+        input("When you are on the project page, press Enter... ")
         links = get_project_links(driver)
         for url in links:
             print(url)

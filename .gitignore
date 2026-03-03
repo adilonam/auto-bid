@@ -39,3 +39,6 @@ htmlcov/
 # Local env files (secrets)
 .env.local
 .env.*.local
+
+# Session cookies (do not commit)
+freelancer_cookies.json

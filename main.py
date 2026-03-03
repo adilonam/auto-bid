@@ -1,21 +1,23 @@
-import os
-import time
+from pathlib import Path
 
 from browser import create_chrome_driver
-from config import TARGET_URL
+from browser.session import ensure_logged_in
+from config import COOKIES_FILE, LOGIN_URL, TARGET_URL
+from freelancer import get_project_links
 
 
 def main() -> None:
-    in_container = os.path.isfile("/usr/bin/chromium") or os.path.isfile("/usr/bin/chromium-browser")
-    if in_container:
-        # Default headless; set HEADLESS=0 to show browser via XQuartz on Mac
-        headless = os.environ.get("HEADLESS", "1") == "1"
-    else:
-        headless = "DISPLAY" not in os.environ
-    driver = create_chrome_driver(headless=headless)
+    driver = create_chrome_driver()
     try:
-        driver.get(TARGET_URL)
-        time.sleep(5)
+        already_on_page = ensure_logged_in(driver, LOGIN_URL, Path(COOKIES_FILE))
+        if not already_on_page:
+            driver.get(TARGET_URL)
+
+        links = get_project_links(driver)
+        for url in links:
+            print(url)
+
+        input("Press Enter to close the browser... ")
     finally:
         driver.quit()
 

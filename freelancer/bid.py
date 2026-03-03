@@ -29,7 +29,7 @@ def fill_bid_and_submit(
             EC.presence_of_element_located((By.XPATH, BID_TEXTAREA_XPATH))
         )
     except TimeoutException:
-        print("Bid textarea not found on this page; skipping AI call.")
+        print("Bid textarea not found, url:", driver.current_url)
         return
 
     print("Generating from AI model...")

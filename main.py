@@ -30,6 +30,7 @@ def main() -> None:
             driver.get(url)
             links = get_project_links(driver)
             for i, link in enumerate(links, start=1):
+                print(f"Starting project {i}... ")
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
                 fill_bid_and_submit(

@@ -7,6 +7,7 @@ load_dotenv()
 from browser import create_chrome_driver
 from browser.session import ensure_logged_in
 from config import (
+    BID_WAIT_TIMEOUT_SECONDS,
     COOKIES_FILE,
     LOGIN_URL,
     SEARCH_PAGES_END,
@@ -14,8 +15,7 @@ from config import (
     SEARCH_PROJECTS_URL,
     TARGET_URL,
 )
-from freelancer import get_project_links, get_project_title_and_details
-from openai_bid import generate_bid
+from freelancer import fill_bid_and_submit, get_project_links, get_project_title_and_details
 
 
 def main() -> None:
@@ -29,13 +29,30 @@ def main() -> None:
             url = f"{SEARCH_PROJECTS_URL}&page={page}"
             driver.get(url)
             links = get_project_links(driver)
-            for i, link in enumerate(links, start=1):
-                input(f"Press Enter to go to link {i}... ")
+            index = 0
+            total = len(links)
+            while index < total:
+                link_number = index + 1
+                answer = input(
+                    f"Press Enter to go to link {link_number}, "
+                    f"or type 'r' then Enter to go back to link {link_number - 1}... "
+                ).strip().lower()
+
+                if answer == "r":
+                    if index == 0:
+                        print("Already at the first link; cannot go back further.")
+                        continue
+                    index -= 1
+                    link_number = index + 1
+                    print(f"Reversing to link {link_number}...")
+
+                link = links[index]
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
-                bid_text = generate_bid(title, details)
-                print(bid_text)
-                print()
+                fill_bid_and_submit(
+                    driver, title, details, BID_WAIT_TIMEOUT_SECONDS
+                )
+                index += 1
 
         input("Press Enter to close the browser... ")
     finally:

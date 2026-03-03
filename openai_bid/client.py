@@ -33,3 +33,51 @@ def generate_bid(project_title: str, project_details: str) -> str:
         return (response.choices[0].message.content or "").strip()
     except Exception as e:
         return f"Error generating bid: {e}"
+
+
+def parse_bid_and_question(model_response: str) -> tuple[str, str]:
+    """
+    Split the model response into bid text and question text.
+
+    Expected format (plain text):
+        Bid: ...
+        Question: ...
+        Address: ...
+    """
+    bid_lines: list[str] = []
+    question_lines: list[str] = []
+    current: str | None = None
+
+    for raw_line in model_response.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        lower = line.lower()
+        if lower.startswith("bid:"):
+            current = "bid"
+            content = line[4:].strip()
+            if content:
+                bid_lines.append(content)
+            continue
+
+        if lower.startswith("question:"):
+            current = "question"
+            content = line[len("question:") :].strip()
+            if content:
+                question_lines.append(content)
+            continue
+
+        if lower.startswith("address:"):
+            bid_lines.append(line)
+            current = "bid"
+            continue
+
+        if current == "bid":
+            bid_lines.append(line)
+        elif current == "question":
+            question_lines.append(line)
+
+    bid_text = "\n".join(bid_lines).strip()
+    question_text = "\n".join(question_lines).strip()
+    return bid_text, question_text

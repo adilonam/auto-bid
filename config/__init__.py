@@ -1,4 +1,5 @@
 from config.settings import (
+    BID_WAIT_TIMEOUT_SECONDS,
     COOKIES_FILE,
     LOGIN_URL,
     SEARCH_PAGES_END,
@@ -8,6 +9,7 @@ from config.settings import (
 )
 
 __all__ = [
+    "BID_WAIT_TIMEOUT_SECONDS",
     "COOKIES_FILE",
     "LOGIN_URL",
     "SEARCH_PAGES_END",

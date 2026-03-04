@@ -16,7 +16,7 @@ def main() -> None:
     search_projects_url = os.environ.get("SEARCH_PROJECTS_URL", DEFAULT_SEARCH_PROJECTS_URL)
     search_pages_start = int(os.environ.get("SEARCH_PAGES_START", "3"))
     search_pages_end = int(os.environ.get("SEARCH_PAGES_END", "10"))
-    bid_wait_timeout_seconds = int(os.environ.get("BID_WAIT_TIMEOUT_SECONDS", "2"))
+    wait_timeout_seconds = int(os.environ.get("WAIT_TIMEOUT_SECONDS", "2"))
     link_wait_seconds = int(os.environ.get("LINK_WAIT_SECONDS", "3"))
 
     driver = create_chrome_driver()
@@ -34,7 +34,7 @@ def main() -> None:
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
                 fill_bid_and_submit(
-                    driver, title, details, bid_wait_timeout_seconds
+                    driver, title, details, wait_timeout_seconds
                 )
                 time.sleep(link_wait_seconds)
 

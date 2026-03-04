@@ -1,8 +1,15 @@
 from config.settings import (
     COOKIES_FILE,
     DEFAULT_SEARCH_PROJECTS_URL,
+    FREELANCER_USER_ID,
     LOGIN_URL,
     TARGET_URL,
 )
 
-__all__ = ["COOKIES_FILE", "DEFAULT_SEARCH_PROJECTS_URL", "LOGIN_URL", "TARGET_URL"]
+__all__ = [
+    "COOKIES_FILE",
+    "DEFAULT_SEARCH_PROJECTS_URL",
+    "FREELANCER_USER_ID",
+    "LOGIN_URL",
+    "TARGET_URL",
+]

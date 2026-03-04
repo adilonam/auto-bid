@@ -1,6 +1,9 @@
+
+
 TARGET_URL = "https://www.freelancer.com"
 LOGIN_URL = "https://www.freelancer.com/login"
 COOKIES_FILE = "freelancer_cookies.json"
+FREELANCER_USER_ID = "ail5a9f298b597ed"
 
 DEFAULT_SEARCH_PROJECTS_URL = (
     "https://www.freelancer.com/search/projects?types=hourly,fixed&projectSort=fewestBids"

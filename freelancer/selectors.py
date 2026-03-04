@@ -23,6 +23,13 @@ PROJECT_VIEW_DETAILS_XPATH = (
 
 # Bid form (project view)
 BID_TEXTAREA_XPATH = '//*[@id="descriptionTextArea"]'
+# Question area: container that lists existing questions (check for user id in descendants)
+QUESTION_AREA_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
+    "fl-grid/fl-col[1]/app-project-clarification-board/fl-card/div/div/fl-comments"
+)
 QUESTION_TEXTAREA_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
     "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
@@ -44,4 +51,26 @@ BID_SUBMIT_BUTTON_XPATH = (
     "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
     "fl-grid/fl-col[1]/app-project-details-freelancer/app-bid-form/fl-card/"
     "div/div[2]/div[2]/fl-button/button"
+)
+
+# After submitting bid: message shown when bid is inconsistent with profile
+BID_INCONSISTENT_MESSAGE_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-proposals-wrapper/app-project-view-proposals/fl-page-layout/"
+    "fl-container/fl-page-layout-single/fl-grid/fl-col[1]/"
+    "app-bid-list-filtering-wrapper/app-bid-list/div/div/div[2]/div/h1/span[1]"
+)
+BID_INCONSISTENT_MESSAGE_TEXT = "Your bid appears inconsistent with your profile"
+RETRACT_BID_BUTTON_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-proposals-wrapper/app-project-view-proposals/fl-page-layout/"
+    "fl-container/fl-page-layout-single/fl-grid/fl-col[1]/"
+    "app-bid-list-filtering-wrapper/app-bid-list/div/div/div[3]/app-bid-card/fl-card/"
+    "div/div/fl-bid-pattern-card/div/div[2]/div[2]/fl-bid-pattern-card-actions/"
+    "app-bid-card-actions-pattern/div[2]/div/fl-button[1]/button"
+)
+RETRACT_BID_CONFIRM_BUTTON_XPATH = (
+    "/html/body/app-root/fl-modal/div/div/div/ng-component/div/div/fl-button[2]/button"
 )

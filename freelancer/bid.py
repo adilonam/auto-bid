@@ -91,11 +91,13 @@ def fill_bid_and_submit(
         return
 
     # After bid submit: if "inconsistent with profile" message appears, click retract bid
+    found_inconsistent = False
     try:
         msg_el = WebDriverWait(driver, wait_timeout_seconds).until(
             EC.presence_of_element_located((By.XPATH, BID_INCONSISTENT_MESSAGE_XPATH))
         )
         if msg_el and BID_INCONSISTENT_MESSAGE_TEXT in (msg_el.text or ""):
+            found_inconsistent = True
             print("Bid is inconsistent with profile; retracting bid. url:", driver.current_url)
             retract_btn = driver.find_element(By.XPATH, RETRACT_BID_BUTTON_XPATH)
             retract_btn.click()
@@ -107,3 +109,6 @@ def fill_bid_and_submit(
         pass
     except NoSuchElementException:
         print("Retract bid button not found; bid may be inconsistent.")
+
+    if not found_inconsistent:
+        print("Success bid for", driver.current_url)

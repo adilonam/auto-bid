@@ -93,7 +93,7 @@ def fill_bid_and_submit(
     # After bid submit: if "inconsistent with profile" message appears, click retract bid
     found_inconsistent = False
     try:
-        msg_el = WebDriverWait(driver, wait_timeout_seconds).until(
+        msg_el = WebDriverWait(driver, wait_timeout_seconds+10).until(
             EC.presence_of_element_located((By.XPATH, BID_INCONSISTENT_MESSAGE_XPATH))
         )
         if msg_el and BID_INCONSISTENT_MESSAGE_TEXT in (msg_el.text or ""):

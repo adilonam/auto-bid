@@ -66,7 +66,7 @@ def fill_bid_and_submit(
 
     has_previous_question = _question_area_contains_user_id(driver, FREELANCER_USER_ID)
     if has_previous_question:
-        print("Previous question from you found on this project; skipping question.")
+        print("Previous question from you found on this project; skipping question, url:", driver.current_url)
     if question_text and not has_previous_question:
         try:
             question_element = driver.find_element(By.XPATH, QUESTION_TEXTAREA_XPATH)

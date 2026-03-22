@@ -1,3 +1,5 @@
+from typing import Literal, Optional
+
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
@@ -31,15 +33,23 @@ def _question_area_contains_user_id(driver: webdriver.Chrome, user_id: str) -> b
     return False
 
 
+BidOutcome = Optional[Literal["success", "failed"]]
+
+
 def fill_bid_and_submit(
     driver: webdriver.Chrome,
     title: str,
     details: str,
     wait_timeout_seconds: int,
-) -> None:
+) -> BidOutcome:
     """
     If the bid textarea exists: generate bid from AI, fill bid and question
     fields, then click the submit button. Otherwise skip without calling the AI.
+
+    Returns:
+        "success" if bid stayed submitted (no inconsistent-profile message),
+        "failed" if bid could not be completed or was inconsistent/retracted,
+        None if skipped (e.g. no bid textarea on page).
     """
     wait = WebDriverWait(driver, wait_timeout_seconds)
     try:
@@ -48,18 +58,18 @@ def fill_bid_and_submit(
         )
     except TimeoutException:
         print("Bid textarea not found, url:", driver.current_url)
-        return
+        return None
 
     print("Generating from AI model...")
     model_response = generate_bid(title, details)
     if model_response.startswith("Error:"):
         print(model_response)
-        return
+        return "failed"
 
     bid_text, question_text = parse_bid_and_question(model_response)
     if not bid_text:
         print("Could not parse bid text from model response; skipping fill.")
-        return
+        return "failed"
 
     bid_element.clear()
     bid_element.send_keys(bid_text)
@@ -81,14 +91,14 @@ def fill_bid_and_submit(
             question_btn.click()
         except NoSuchElementException:
             print("Question submit button not found; bid and question filled but not submitted.")
-            return
+            return "failed"
 
     try:
         bid_btn = driver.find_element(By.XPATH, BID_SUBMIT_BUTTON_XPATH)
         bid_btn.click()
     except NoSuchElementException:
         print("Bid submit button not found; question was submitted but bid was not.")
-        return
+        return "failed"
 
     # After bid submit: if "inconsistent with profile" message appears, click retract bid
     found_inconsistent = False
@@ -112,3 +122,5 @@ def fill_bid_and_submit(
 
     if not found_inconsistent:
         print("Success bid for", driver.current_url)
+        return "success"
+    return "failed"

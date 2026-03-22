@@ -24,6 +24,8 @@ def main() -> None:
         ensure_logged_in(driver, LOGIN_URL, Path(COOKIES_FILE))
         driver.get(TARGET_URL)
         input("Press Enter to start... ")
+        success_bids = 0
+        failed_bids = 0
         for page in range(search_pages_start, search_pages_end + 1):
             print(f"Starting page {page}... ")
             url = f"{search_projects_url}&page={page}"
@@ -33,11 +35,20 @@ def main() -> None:
                 print(f"Starting project {i}... ")
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
-                fill_bid_and_submit(
+                outcome = fill_bid_and_submit(
                     driver, title, details, wait_timeout_seconds
                 )
+                if outcome == "success":
+                    success_bids += 1
+                elif outcome == "failed":
+                    failed_bids += 1
                 time.sleep(link_wait_seconds)
+            print(
+                f"Page {page} done — success bids: {success_bids}, "
+                f"failed bids: {failed_bids} (running totals)"
+            )
 
+        print(f"All pages done — success bids: {success_bids}, failed bids: {failed_bids}")
         input("Press Enter to close the browser... ")
     finally:
         driver.quit()

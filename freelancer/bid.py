@@ -5,7 +5,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
+import time
 from freelancer.selectors import (
     BID_INCONSISTENT_MESSAGE_TEXT,
     BID_INCONSISTENT_MESSAGE_XPATH,
@@ -82,16 +82,11 @@ def fill_bid_and_submit(
             question_element = driver.find_element(By.XPATH, QUESTION_TEXTAREA_XPATH)
             question_element.clear()
             question_element.send_keys(question_text)
-        except NoSuchElementException:
-            print("Question textarea not found; filled bid only.")
-
-    if question_text and not has_previous_question:
-        try:
             question_btn = driver.find_element(By.XPATH, QUESTION_SUBMIT_BUTTON_XPATH)
             question_btn.click()
         except NoSuchElementException:
-            print("Question submit button not found; bid and question filled but not submitted.")
-            return "failed"
+            print("Question textarea or submit button not found; skipping question.")
+            time.sleep(10000)
 
     try:
         bid_btn = driver.find_element(By.XPATH, BID_SUBMIT_BUTTON_XPATH)

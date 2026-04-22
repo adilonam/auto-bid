@@ -33,17 +33,17 @@ QUESTION_AREA_XPATH = (
 QUESTION_TEXTAREA_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
     "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
-    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
-    "fl-grid/fl-col[1]/app-project-clarification-board/fl-card/div/div/"
-    "fl-comments/fl-comments-form/div/div/div/fl-auto-complete/"
-    "fl-auto-complete-rich-text/fl-auto-complete-input/fl-textarea/textarea"
+    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/fl-grid/"
+    "fl-col[1]/app-project-clarification-board/fl-card/div/div/fl-comments/"
+    "fl-comments-form/div/div/div[1]/fl-auto-complete/fl-auto-complete-rich-text/"
+    "fl-auto-complete-input/fl-textarea/div[1]/textarea"
 )
 QUESTION_SUBMIT_BUTTON_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
     "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
-    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
-    "fl-grid/fl-col[1]/app-project-clarification-board/fl-card/div/div/"
-    "fl-comments/fl-comments-form/div/div/div[2]/div/fl-button[2]/button"
+    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/fl-grid/"
+    "fl-col[1]/app-project-clarification-board/fl-card/div/div/fl-comments/"
+    "fl-comments-form/div/div/div[2]/div/fl-button[2]/button"
 )
 BID_SUBMIT_BUTTON_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"

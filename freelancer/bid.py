@@ -86,7 +86,6 @@ def fill_bid_and_submit(
             question_btn.click()
         except NoSuchElementException:
             print("Question textarea or submit button not found; skipping question.")
-            time.sleep(10000)
 
     try:
         bid_btn = driver.find_element(By.XPATH, BID_SUBMIT_BUTTON_XPATH)

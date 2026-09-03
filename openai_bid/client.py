@@ -1,6 +1,9 @@
+import logging
 import os
 
 from openai import OpenAI
+
+logger = logging.getLogger(__name__)
 
 BID_SYSTEM_PROMPT = """- You are an expert freelancer assistant. For any project description provided, always respond in English, even if the user's prompt is in another language. First, generate a professional bid in a concise paragraph, followed by one short and focused question (1–2 lines) to clarify the client's intentions. Use light marketing: the bid should highlight your value, build trust, and give a reason to choose you (e.g. relevant experience, reliability, or fit). The question should engage the client and show genuine interest so they feel heard and more likely to respond positively and select you.
 - Ensure the question is clear and concise, and the bid is persuasive, professional, tailored to the project, and written to encourage the client to choose you. Do not mention cost, pricing, or project duration in your response. Use plain text only—no markdown formatting (no headers, bold, lists, or other markdown syntax).
@@ -18,8 +21,11 @@ def generate_bid(project_title: str, project_details: str) -> str:
     """Call OpenAI to generate a bid for the given project. Returns the model response text."""
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        return "Error: OPENAI_API_KEY environment variable is not set."
+        msg = "Error: OPENAI_API_KEY environment variable is not set."
+        logger.error("AI generation failed reason=missing_api_key title=%r", project_title)
+        return msg
 
+    logger.info("AI generation started title=%r", project_title)
     client = OpenAI(api_key=api_key)
     user_content = f"Project title: {project_title}\n\nProject details:\n{project_details}"
 
@@ -31,8 +37,16 @@ def generate_bid(project_title: str, project_details: str) -> str:
                 {"role": "user", "content": user_content},
             ],
         )
-        return (response.choices[0].message.content or "").strip()
+        content = (response.choices[0].message.content or "").strip()
+        logger.info(
+            "AI generation succeeded title=%r response_length=%s",
+            project_title,
+            len(content),
+        )
+        logger.debug("AI response title=%r content=%r", project_title, content)
+        return content
     except Exception as e:
+        logger.exception("AI generation failed title=%r", project_title)
         return f"Error generating bid: {e}"
 
 

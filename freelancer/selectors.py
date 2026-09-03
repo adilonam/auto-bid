@@ -22,6 +22,14 @@ PROJECT_VIEW_DETAILS_XPATH = (
 )
 
 # Bid form (project view)
+PROJECT_BUDGET_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
+    "fl-grid/fl-col[1]/app-project-details-card/fl-card/div/div/h2/div/div[2]/"
+    "app-project-details-budget/div/p"
+)
+BID_AMOUNT_INPUT_XPATH = '//*[@id="bidAmountInput"]'
 BID_TEXTAREA_XPATH = '//*[@id="descriptionTextArea"]'
 # Question area: container that lists existing questions (check for user id in descendants)
 QUESTION_AREA_XPATH = (

@@ -42,3 +42,6 @@ htmlcov/
 
 # Session cookies (do not commit)
 freelancer_cookies.json
+
+# Log files
+logs/

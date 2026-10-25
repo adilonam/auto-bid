@@ -16,6 +16,13 @@ from freelancer import fill_bid_and_submit, get_project_links, get_project_title
 logger = logging.getLogger(__name__)
 
 
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def main() -> None:
     log_path = setup_logging()
     logger.info("Logging initialized log_file=%s", log_path)
@@ -24,6 +31,8 @@ def main() -> None:
     search_pages_start = int(os.environ.get("SEARCH_PAGES_START", "3"))
     search_pages_end = int(os.environ.get("SEARCH_PAGES_END", "10"))
     wait_timeout_seconds = int(os.environ.get("WAIT_TIMEOUT_SECONDS", "2"))
+    retract_bid = _env_flag("RETRACT_BID", True)
+    logger.info("Retract non-conform bids retract_bid=%s", retract_bid)
 
     driver = create_chrome_driver()
     try:
@@ -43,7 +52,7 @@ def main() -> None:
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
                 outcome = fill_bid_and_submit(
-                    driver, title, details, wait_timeout_seconds
+                    driver, title, details, wait_timeout_seconds, retract_bid
                 )
                 if outcome == "success":
                     success_bids += 1

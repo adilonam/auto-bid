@@ -110,10 +110,15 @@ def fill_bid_and_submit(
     title: str,
     details: str,
     wait_timeout_seconds: int,
+    retract_bid: bool = True,
 ) -> BidOutcome:
     """
     If the bid textarea exists: generate bid from AI, fill bid and question
     fields, then click the submit button. Otherwise skip without calling the AI.
+
+    When retract_bid is true (default), a bid Freelancer flags as inconsistent
+    with the profile is retracted. When false, that bid is left in place and
+    only logged.
 
     Returns:
         "success" if bid stayed submitted (no inconsistent-profile message),
@@ -182,16 +187,24 @@ def fill_bid_and_submit(
         )
         if msg_el and BID_INCONSISTENT_MESSAGE_TEXT in (msg_el.text or ""):
             found_inconsistent = True
-            logger.warning(
-                "Bid inconsistent with profile; retracting url=%s", url
-            )
-            retract_btn = driver.find_element(By.XPATH, RETRACT_BID_BUTTON_XPATH)
-            retract_btn.click()
-            confirm_btn = WebDriverWait(driver, wait_timeout_seconds).until(
-                EC.element_to_be_clickable((By.XPATH, RETRACT_BID_CONFIRM_BUTTON_XPATH))
-            )
-            confirm_btn.click()
-            logger.info("Bid retracted url=%s", url)
+            if not retract_bid:
+                logger.warning(
+                    "Bid not conform with profile; will not be retracted url=%s",
+                    url,
+                )
+            else:
+                logger.warning(
+                    "Bid inconsistent with profile; retracting url=%s", url
+                )
+                retract_btn = driver.find_element(By.XPATH, RETRACT_BID_BUTTON_XPATH)
+                retract_btn.click()
+                confirm_btn = WebDriverWait(driver, wait_timeout_seconds).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, RETRACT_BID_CONFIRM_BUTTON_XPATH)
+                    )
+                )
+                confirm_btn.click()
+                logger.info("Bid retracted url=%s", url)
     except TimeoutException:
         pass
     except NoSuchElementException:

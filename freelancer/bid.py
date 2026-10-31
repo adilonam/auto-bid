@@ -15,12 +15,15 @@ from freelancer.selectors import (
     BID_INCONSISTENT_MESSAGE_XPATH,
     BID_SUBMIT_BUTTON_XPATH,
     BID_TEXTAREA_XPATH,
+    COMPLETE_PROFILE_TITLE_TEXT,
+    COMPLETE_PROFILE_TITLE_XPATH,
     PROJECT_BUDGET_XPATH,
     QUESTION_AREA_XPATH,
     QUESTION_SUBMIT_BUTTON_XPATH,
     QUESTION_TEXTAREA_XPATH,
     RETRACT_BID_BUTTON_XPATH,
     RETRACT_BID_CONFIRM_BUTTON_XPATH,
+    SEALED_BID_BUTTON_XPATH,
 )
 from config import FREELANCER_USER_ID
 from openai_bid import generate_bid, parse_bid_and_question
@@ -132,6 +135,18 @@ def fill_bid_and_submit(
             EC.presence_of_element_located((By.XPATH, BID_TEXTAREA_XPATH))
         )
     except TimeoutException:
+        try:
+            profile_title = driver.find_element(By.XPATH, COMPLETE_PROFILE_TITLE_XPATH)
+            title_text = (profile_title.text or "").strip()
+            if COMPLETE_PROFILE_TITLE_TEXT in title_text:
+                logger.warning(
+                    "Complete your profile required for this link: %s (title=%r)",
+                    url,
+                    title_text,
+                )
+                return None
+        except NoSuchElementException:
+            pass
         logger.info("Bid skipped: textarea not found url=%s", url)
         return None
 
@@ -169,6 +184,21 @@ def fill_bid_and_submit(
             )
 
     _fill_bid_amount_from_budget(driver)
+
+    try:
+        sealed_bid_btn = driver.find_element(By.XPATH, SEALED_BID_BUTTON_XPATH)
+        sealed_bid_btn.click()
+        logger.info(
+            "Sealed bid selected fltrackinglabel=%s url=%s",
+            sealed_bid_btn.get_attribute("fltrackinglabel"),
+            url,
+        )
+    except NoSuchElementException:
+        logger.warning(
+            "Sealed bid button not found "
+            '(expected fltrackinglabel="BidFormUpgrades.Sealed") url=%s',
+            url,
+        )
 
     try:
         bid_btn = driver.find_element(By.XPATH, BID_SUBMIT_BUTTON_XPATH)

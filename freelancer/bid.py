@@ -15,12 +15,15 @@ from freelancer.selectors import (
     BID_INCONSISTENT_MESSAGE_XPATH,
     BID_SUBMIT_BUTTON_XPATH,
     BID_TEXTAREA_XPATH,
+    COMPLETE_PROFILE_TITLE_TEXT,
+    COMPLETE_PROFILE_TITLE_XPATH,
     PROJECT_BUDGET_XPATH,
     QUESTION_AREA_XPATH,
     QUESTION_SUBMIT_BUTTON_XPATH,
     QUESTION_TEXTAREA_XPATH,
     RETRACT_BID_BUTTON_XPATH,
     RETRACT_BID_CONFIRM_BUTTON_XPATH,
+    SEALED_BID_BUTTON_XPATH,
 )
 from config import FREELANCER_USER_ID
 from openai_bid import generate_bid, parse_bid_and_question
@@ -110,10 +113,15 @@ def fill_bid_and_submit(
     title: str,
     details: str,
     wait_timeout_seconds: int,
+    retract_bid: bool = True,
 ) -> BidOutcome:
     """
     If the bid textarea exists: generate bid from AI, fill bid and question
     fields, then click the submit button. Otherwise skip without calling the AI.
+
+    When retract_bid is true (default), a bid Freelancer flags as inconsistent
+    with the profile is retracted. When false, that bid is left in place and
+    only logged.
 
     Returns:
         "success" if bid stayed submitted (no inconsistent-profile message),
@@ -127,6 +135,18 @@ def fill_bid_and_submit(
             EC.presence_of_element_located((By.XPATH, BID_TEXTAREA_XPATH))
         )
     except TimeoutException:
+        try:
+            profile_title = driver.find_element(By.XPATH, COMPLETE_PROFILE_TITLE_XPATH)
+            title_text = (profile_title.text or "").strip()
+            if COMPLETE_PROFILE_TITLE_TEXT in title_text:
+                logger.warning(
+                    "Complete your profile required for this link: %s (title=%r)",
+                    url,
+                    title_text,
+                )
+                return None
+        except NoSuchElementException:
+            pass
         logger.info("Bid skipped: textarea not found url=%s", url)
         return None
 
@@ -166,6 +186,21 @@ def fill_bid_and_submit(
     _fill_bid_amount_from_budget(driver)
 
     try:
+        sealed_bid_btn = driver.find_element(By.XPATH, SEALED_BID_BUTTON_XPATH)
+        sealed_bid_btn.click()
+        logger.info(
+            "Sealed bid selected fltrackinglabel=%s url=%s",
+            sealed_bid_btn.get_attribute("fltrackinglabel"),
+            url,
+        )
+    except NoSuchElementException:
+        logger.warning(
+            "Sealed bid button not found "
+            '(expected fltrackinglabel="BidFormUpgrades.Sealed") url=%s',
+            url,
+        )
+
+    try:
         bid_btn = driver.find_element(By.XPATH, BID_SUBMIT_BUTTON_XPATH)
         bid_btn.click()
     except NoSuchElementException:
@@ -182,16 +217,24 @@ def fill_bid_and_submit(
         )
         if msg_el and BID_INCONSISTENT_MESSAGE_TEXT in (msg_el.text or ""):
             found_inconsistent = True
-            logger.warning(
-                "Bid inconsistent with profile; retracting url=%s", url
-            )
-            retract_btn = driver.find_element(By.XPATH, RETRACT_BID_BUTTON_XPATH)
-            retract_btn.click()
-            confirm_btn = WebDriverWait(driver, wait_timeout_seconds).until(
-                EC.element_to_be_clickable((By.XPATH, RETRACT_BID_CONFIRM_BUTTON_XPATH))
-            )
-            confirm_btn.click()
-            logger.info("Bid retracted url=%s", url)
+            if not retract_bid:
+                logger.warning(
+                    "Bid not conform with profile; will not be retracted url=%s",
+                    url,
+                )
+            else:
+                logger.warning(
+                    "Bid inconsistent with profile; retracting url=%s", url
+                )
+                retract_btn = driver.find_element(By.XPATH, RETRACT_BID_BUTTON_XPATH)
+                retract_btn.click()
+                confirm_btn = WebDriverWait(driver, wait_timeout_seconds).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, RETRACT_BID_CONFIRM_BUTTON_XPATH)
+                    )
+                )
+                confirm_btn.click()
+                logger.info("Bid retracted url=%s", url)
     except TimeoutException:
         pass
     except NoSuchElementException:

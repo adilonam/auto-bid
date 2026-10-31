@@ -31,6 +31,14 @@ PROJECT_BUDGET_XPATH = (
 )
 BID_AMOUNT_INPUT_XPATH = '//*[@id="bidAmountInput"]'
 BID_TEXTAREA_XPATH = '//*[@id="descriptionTextArea"]'
+COMPLETE_PROFILE_TITLE_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
+    "fl-grid/fl-col[1]/app-project-details-freelancer/app-project-banner/div/"
+    'app-bid-steps/fl-card/div/div/h3[normalize-space()="Complete your profile"]'
+)
+COMPLETE_PROFILE_TITLE_TEXT = "Complete your profile"
 # Question area: container that lists existing questions (check for user id in descendants)
 QUESTION_AREA_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
@@ -52,6 +60,14 @@ QUESTION_SUBMIT_BUTTON_XPATH = (
     "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/fl-grid/"
     "fl-col[1]/app-project-clarification-board/fl-card/div/div/fl-comments/"
     "fl-comments-form/div/div/div[2]/div/fl-button[2]/button"
+)
+SEALED_BID_BUTTON_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
+    "fl-grid/fl-col[1]/app-project-details-freelancer/app-bid-form/fl-card/"
+    "div/div[2]/app-upgrades-bid-form/fl-list/"
+    'fl-list-item[1][@fltrackinglabel="BidFormUpgrades.Sealed"]'
 )
 BID_SUBMIT_BUTTON_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"

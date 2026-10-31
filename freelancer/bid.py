@@ -105,6 +105,46 @@ def _question_area_contains_user_id(driver: webdriver.Chrome, user_id: str) -> b
     return False
 
 
+def _place_question_if_needed(
+    driver: webdriver.Chrome, question_text: str, url: str
+) -> None:
+    """Fill and submit a question unless a previous question from this user exists."""
+    has_previous_question = _question_area_contains_user_id(driver, FREELANCER_USER_ID)
+    if has_previous_question:
+        logger.info("Question skipped: previous question exists url=%s", url)
+        return
+    if not question_text:
+        return
+    try:
+        question_element = driver.find_element(By.XPATH, QUESTION_TEXTAREA_XPATH)
+        question_element.clear()
+        question_element.send_keys(question_text)
+        question_btn = driver.find_element(By.XPATH, QUESTION_SUBMIT_BUTTON_XPATH)
+        question_btn.click()
+        logger.info("Question inserted url=%s", url)
+    except NoSuchElementException:
+        logger.warning(
+            "Question textarea or submit button not found url=%s", url
+        )
+
+
+def _warn_if_complete_profile_required(driver: webdriver.Chrome, url: str) -> bool:
+    """Return True if the Complete your profile banner is shown (and log a warning)."""
+    try:
+        profile_title = driver.find_element(By.XPATH, COMPLETE_PROFILE_TITLE_XPATH)
+        title_text = (profile_title.text or "").strip()
+        if COMPLETE_PROFILE_TITLE_TEXT in title_text:
+            logger.warning(
+                "Complete your profile required for this link: %s (title=%r)",
+                url,
+                title_text,
+            )
+            return True
+    except NoSuchElementException:
+        pass
+    return False
+
+
 BidOutcome = Optional[Literal["success", "failed"]]
 
 
@@ -116,8 +156,8 @@ def fill_bid_and_submit(
     retract_bid: bool = True,
 ) -> BidOutcome:
     """
-    If the bid textarea exists: generate bid from AI, fill bid and question
-    fields, then click the submit button. Otherwise skip without calling the AI.
+    Generate AI content, place the question first (unless already asked), then
+    fill and submit the bid when the bid textarea is available.
 
     When retract_bid is true (default), a bid Freelancer flags as inconsistent
     with the profile is retracted. When false, that bid is left in place and
@@ -126,29 +166,10 @@ def fill_bid_and_submit(
     Returns:
         "success" if bid stayed submitted (no inconsistent-profile message),
         "failed" if bid could not be completed or was inconsistent/retracted,
-        None if skipped (e.g. no bid textarea on page).
+        None if bid was skipped (e.g. no bid textarea) after handling the question.
     """
     url = driver.current_url
     wait = WebDriverWait(driver, wait_timeout_seconds)
-    try:
-        bid_element = wait.until(
-            EC.presence_of_element_located((By.XPATH, BID_TEXTAREA_XPATH))
-        )
-    except TimeoutException:
-        try:
-            profile_title = driver.find_element(By.XPATH, COMPLETE_PROFILE_TITLE_XPATH)
-            title_text = (profile_title.text or "").strip()
-            if COMPLETE_PROFILE_TITLE_TEXT in title_text:
-                logger.warning(
-                    "Complete your profile required for this link: %s (title=%r)",
-                    url,
-                    title_text,
-                )
-                return None
-        except NoSuchElementException:
-            pass
-        logger.info("Bid skipped: textarea not found url=%s", url)
-        return None
 
     model_response = generate_bid(title, details)
     if model_response.startswith("Error:"):
@@ -156,32 +177,33 @@ def fill_bid_and_submit(
         return "failed"
 
     bid_text, question_text = parse_bid_and_question(model_response)
+    if not bid_text and not question_text:
+        logger.warning(
+            "Could not parse bid or question from model response url=%s", url
+        )
+        return "failed"
+
+    # Question first — even when the bid textarea is missing
+    _place_question_if_needed(driver, question_text, url)
+
+    try:
+        bid_element = wait.until(
+            EC.presence_of_element_located((By.XPATH, BID_TEXTAREA_XPATH))
+        )
+    except TimeoutException:
+        _warn_if_complete_profile_required(driver, url)
+        logger.info("Bid skipped: textarea not found url=%s", url)
+        return None
+
     if not bid_text:
         logger.warning(
-            "Could not parse bid text from model response url=%s", url
+            "Could not parse bid text from model response; question may have been placed url=%s",
+            url,
         )
         return "failed"
 
     bid_element.clear()
     bid_element.send_keys(bid_text)
-
-    has_previous_question = _question_area_contains_user_id(driver, FREELANCER_USER_ID)
-    if has_previous_question:
-        logger.info(
-            "Question skipped: previous question exists url=%s", url
-        )
-    elif question_text:
-        try:
-            question_element = driver.find_element(By.XPATH, QUESTION_TEXTAREA_XPATH)
-            question_element.clear()
-            question_element.send_keys(question_text)
-            question_btn = driver.find_element(By.XPATH, QUESTION_SUBMIT_BUTTON_XPATH)
-            question_btn.click()
-            logger.info("Question inserted url=%s", url)
-        except NoSuchElementException:
-            logger.warning(
-                "Question textarea or submit button not found url=%s", url
-            )
 
     _fill_bid_amount_from_budget(driver)
 

@@ -67,7 +67,7 @@ SEALED_BID_BUTTON_XPATH = (
     "app-project-view-details/fl-page-layout/fl-container/fl-page-layout-single/"
     "fl-grid/fl-col[1]/app-project-details-freelancer/app-bid-form/fl-card/"
     "div/div[2]/app-upgrades-bid-form/fl-list/"
-    'fl-list-item[1][@fltrackinglabel="BidFormUpgrades.Sealed"]'
+    'fl-list-item[@fltrackinglabel="BidFormUpgrades.Sealed"]'
 )
 BID_SUBMIT_BUTTON_XPATH = (
     "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"

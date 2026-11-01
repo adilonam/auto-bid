@@ -17,6 +17,7 @@ from freelancer.selectors import (
     BID_TEXTAREA_XPATH,
     COMPLETE_PROFILE_TITLE_TEXT,
     COMPLETE_PROFILE_TITLE_XPATH,
+    PROJECT_BIDDERS_COUNT_XPATH,
     PROJECT_BUDGET_XPATH,
     QUESTION_AREA_XPATH,
     QUESTION_SUBMIT_BUTTON_XPATH,
@@ -145,6 +146,16 @@ def _warn_if_complete_profile_required(driver: webdriver.Chrome, url: str) -> bo
     return False
 
 
+def _get_project_bidders_count(driver: webdriver.Chrome) -> Optional[int]:
+    """Read the current competitor bid count from the project summary."""
+    try:
+        el = driver.find_element(By.XPATH, PROJECT_BIDDERS_COUNT_XPATH)
+        raw = (el.text or "").strip()
+        return int(raw)
+    except (NoSuchElementException, ValueError):
+        return None
+
+
 BidOutcome = Optional[Literal["success", "failed"]]
 
 
@@ -154,10 +165,14 @@ def fill_bid_and_submit(
     details: str,
     wait_timeout_seconds: int,
     retract_bid: bool = True,
+    max_bidders: int = 35,
 ) -> BidOutcome:
     """
     Generate AI content, place the question first (unless already asked), then
     fill and submit the bid when the bid textarea is available.
+
+    If current project bidders exceed max_bidders, place the question only and
+    skip bidding.
 
     When retract_bid is true (default), a bid Freelancer flags as inconsistent
     with the profile is retracted. When false, that bid is left in place and
@@ -166,10 +181,25 @@ def fill_bid_and_submit(
     Returns:
         "success" if bid stayed submitted (no inconsistent-profile message),
         "failed" if bid could not be completed or was inconsistent/retracted,
-        None if bid was skipped (e.g. no bid textarea) after handling the question.
+        None if bid was skipped (e.g. no bid textarea / too many bidders)
+        after handling the question.
     """
     url = driver.current_url
     wait = WebDriverWait(driver, wait_timeout_seconds)
+
+    bidders_count = _get_project_bidders_count(driver)
+    too_many_bidders = (
+        bidders_count is not None and bidders_count > max_bidders
+    )
+    if bidders_count is None:
+        logger.warning("Could not read project bidders count url=%s", url)
+    else:
+        logger.info(
+            "Project bidders count=%s max_bidders=%s url=%s",
+            bidders_count,
+            max_bidders,
+            url,
+        )
 
     model_response = generate_bid(title, details)
     if model_response.startswith("Error:"):
@@ -183,8 +213,18 @@ def fill_bid_and_submit(
         )
         return "failed"
 
-    # Question first — even when the bid textarea is missing
+    # Question first — even when the bid textarea is missing or too many bidders
     _place_question_if_needed(driver, question_text, url)
+
+    if too_many_bidders:
+        logger.warning(
+            "Too many bidders; question placed, bid skipped "
+            "bidders=%s max_bidders=%s url=%s",
+            bidders_count,
+            max_bidders,
+            url,
+        )
+        return None
 
     try:
         bid_element = wait.until(

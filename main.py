@@ -31,8 +31,10 @@ def main() -> None:
     search_pages_start = int(os.environ.get("SEARCH_PAGES_START", "3"))
     search_pages_end = int(os.environ.get("SEARCH_PAGES_END", "10"))
     wait_timeout_seconds = int(os.environ.get("WAIT_TIMEOUT_SECONDS", "2"))
+    max_bidders = int(os.environ.get("MAX_BIDDERS", "35"))
     retract_bid = _env_flag("RETRACT_BID", True)
     logger.info("Retract non-conform bids retract_bid=%s", retract_bid)
+    logger.info("Max bidders before skip bid max_bidders=%s", max_bidders)
 
     driver = create_chrome_driver()
     try:
@@ -52,7 +54,12 @@ def main() -> None:
                 driver.get(link)
                 title, details = get_project_title_and_details(driver)
                 outcome = fill_bid_and_submit(
-                    driver, title, details, wait_timeout_seconds, retract_bid
+                    driver,
+                    title,
+                    details,
+                    wait_timeout_seconds,
+                    retract_bid,
+                    max_bidders,
                 )
                 if outcome == "success":
                     success_bids += 1

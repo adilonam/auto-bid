@@ -20,6 +20,12 @@ PROJECT_VIEW_DETAILS_XPATH = (
     "fl-grid/fl-col[1]/app-project-details-card/fl-card/div/div/"
     "app-project-details-description/div"
 )
+PROJECT_BIDDERS_COUNT_XPATH = (
+    "/html/body/app-root/app-logged-in-shell/div/fl-container/main/div/"
+    "app-project-view/app-project-view-logged-in-wrapper/app-project-view-logged-in/"
+    "app-project-view-header/div/fl-container[1]/fl-grid/fl-col[2]/"
+    "app-project-summary/div/div[1]/p[2]"
+)
 
 # Bid form (project view)
 PROJECT_BUDGET_XPATH = (

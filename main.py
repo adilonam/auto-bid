@@ -7,6 +7,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Optional PROXY: route browser and API traffic through it when set.
+_proxy = os.environ.get("PROXY", "").strip()
+if _proxy:
+    for _k in ("HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy"):
+        os.environ[_k] = _proxy
+    os.environ["NO_PROXY"] = os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
+
 from browser import create_chrome_driver
 from browser.session import ensure_logged_in
 from config import COOKIES_FILE, DEFAULT_SEARCH_PROJECTS_URL, LOGIN_URL, TARGET_URL

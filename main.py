@@ -3,6 +3,7 @@ import os
 import time
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,6 +24,25 @@ from freelancer import fill_bid_and_submit, get_project_links, get_project_title
 logger = logging.getLogger(__name__)
 
 
+def _log_public_ip() -> None:
+    proxy_enabled = bool(_proxy)
+    try:
+        response = requests.get("https://api.ipify.org?format=json", timeout=5)
+        response.raise_for_status()
+        public_ip = response.json().get("ip", "unknown")
+        logger.info(
+            "Public IP address ip=%s proxy_enabled=%s",
+            public_ip,
+            proxy_enabled,
+        )
+    except Exception as e:
+        logger.warning(
+            "Failed to fetch public IP error=%s proxy_enabled=%s",
+            str(e),
+            proxy_enabled,
+        )
+
+
 def _env_flag(name: str, default: bool) -> bool:
     raw = os.environ.get(name)
     if raw is None or not raw.strip():
@@ -33,6 +53,7 @@ def _env_flag(name: str, default: bool) -> bool:
 def main() -> None:
     log_path = setup_logging()
     logger.info("Logging initialized log_file=%s", log_path)
+    _log_public_ip()
 
     search_projects_url = os.environ.get("SEARCH_PROJECTS_URL", DEFAULT_SEARCH_PROJECTS_URL)
     search_pages_start = int(os.environ.get("SEARCH_PAGES_START", "3"))

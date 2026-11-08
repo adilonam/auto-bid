@@ -156,7 +156,7 @@ def _get_project_bidders_count(driver: webdriver.Chrome) -> Optional[int]:
         return None
 
 
-BidOutcome = Optional[Literal["success", "failed"]]
+BidOutcome = Optional[Literal["success", "failed", "stop"]]
 
 
 def fill_bid_and_submit(
@@ -171,8 +171,7 @@ def fill_bid_and_submit(
     Generate AI content, place the question first (unless already asked), then
     fill and submit the bid when the bid textarea is available.
 
-    If current project bidders exceed max_bidders, place the question only and
-    skip bidding.
+    If current project bidders exceed max_bidders, the script should stop entirely.
 
     When retract_bid is true (default), a bid Freelancer flags as inconsistent
     with the profile is retracted. When false, that bid is left in place and
@@ -181,8 +180,8 @@ def fill_bid_and_submit(
     Returns:
         "success" if bid stayed submitted (no inconsistent-profile message),
         "failed" if bid could not be completed or was inconsistent/retracted,
-        None if bid was skipped (e.g. no bid textarea / too many bidders)
-        after handling the question.
+        "stop" if bidders exceed max_bidders (signals script should stop),
+        None if bid was skipped (e.g. no bid textarea) after handling the question.
     """
     url = driver.current_url
     wait = WebDriverWait(driver, wait_timeout_seconds)
@@ -201,6 +200,16 @@ def fill_bid_and_submit(
             url,
         )
 
+    if too_many_bidders:
+        logger.warning(
+            "STOPPING: Project bidder count exceeds maximum. "
+            "bidders_count=%s max_bidders=%s url=%s",
+            bidders_count,
+            max_bidders,
+            url,
+        )
+        return "stop"
+
     model_response = generate_bid(title, details)
     if model_response.startswith("Error:"):
         logger.error("AI generation failed url=%s error=%s", url, model_response)
@@ -213,18 +222,8 @@ def fill_bid_and_submit(
         )
         return "failed"
 
-    # Question first — even when the bid textarea is missing or too many bidders
+    # Question first — even when the bid textarea is missing
     _place_question_if_needed(driver, question_text, url)
-
-    if too_many_bidders:
-        logger.warning(
-            "Too many bidders; question placed, bid skipped "
-            "bidders=%s max_bidders=%s url=%s",
-            bidders_count,
-            max_bidders,
-            url,
-        )
-        return None
 
     try:
         bid_element = wait.until(

@@ -71,6 +71,7 @@ def main() -> None:
         input("Press Enter to start... ")
         success_bids = 0
         failed_bids = 0
+        stopped_early = False
         for page in range(search_pages_start, search_pages_end + 1):
             logger.info("Starting page page=%s", page)
             url = f"{search_projects_url}&page={page}"
@@ -89,11 +90,23 @@ def main() -> None:
                     retract_bid,
                     max_bidders,
                 )
+                if outcome == "stop":
+                    logger.info(
+                        "Run stopped: bidder count exceeded MAX_BIDDERS=%s. "
+                        "success_bids=%s failed_bids=%s",
+                        max_bidders,
+                        success_bids,
+                        failed_bids,
+                    )
+                    stopped_early = True
+                    break
                 if outcome == "success":
                     success_bids += 1
                 elif outcome == "failed":
                     failed_bids += 1
                 time.sleep(wait_timeout_seconds)
+            if stopped_early:
+                break
             logger.info(
                 "Page done page=%s success_bids=%s failed_bids=%s",
                 page,
@@ -101,11 +114,12 @@ def main() -> None:
                 failed_bids,
             )
 
-        logger.info(
-            "All pages done success_bids=%s failed_bids=%s",
-            success_bids,
-            failed_bids,
-        )
+        if not stopped_early:
+            logger.info(
+                "All pages done success_bids=%s failed_bids=%s",
+                success_bids,
+                failed_bids,
+            )
         input("Press Enter to close the browser... ")
     finally:
         driver.quit()

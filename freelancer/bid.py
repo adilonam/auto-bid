@@ -166,12 +166,16 @@ def fill_bid_and_submit(
     wait_timeout_seconds: int,
     retract_bid: bool = True,
     max_bidders: int = 35,
+    ask_question: bool = True,
 ) -> BidOutcome:
     """
     Generate AI content, place the question first (unless already asked), then
     fill and submit the bid when the bid textarea is available.
 
     If current project bidders exceed max_bidders, the script should stop entirely.
+
+    When ask_question is false (ASK_QUESTION=false), no clarifying question is
+    posted on the project; only the bid is placed.
 
     When retract_bid is true (default), a bid Freelancer flags as inconsistent
     with the profile is retracted. When false, that bid is left in place and
@@ -223,7 +227,10 @@ def fill_bid_and_submit(
         return "failed"
 
     # Question first — even when the bid textarea is missing
-    _place_question_if_needed(driver, question_text, url)
+    if ask_question:
+        _place_question_if_needed(driver, question_text, url)
+    else:
+        logger.info("Question skipped: ASK_QUESTION=false url=%s", url)
 
     try:
         bid_element = wait.until(

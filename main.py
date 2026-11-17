@@ -62,6 +62,8 @@ def main() -> None:
     max_bidders = int(os.environ.get("MAX_BIDDERS", "35"))
     retract_bid = _env_flag("RETRACT_BID", True)
     logger.info("Retract non-conform bids retract_bid=%s", retract_bid)
+    ask_question = _env_flag("ASK_QUESTION", True)
+    logger.info("Post clarifying question on projects ask_question=%s", ask_question)
     logger.info("Max bidders before skip bid max_bidders=%s", max_bidders)
 
     driver = create_chrome_driver()
@@ -89,6 +91,7 @@ def main() -> None:
                     wait_timeout_seconds,
                     retract_bid,
                     max_bidders,
+                    ask_question,
                 )
                 if outcome == "stop":
                     logger.info(
